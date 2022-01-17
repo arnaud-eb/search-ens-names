@@ -1,10 +1,22 @@
 import { ethers } from "ethers";
 
+declare global {
+  interface Window {
+    ethereum: {
+      request: (arg: { method: string }) => Promise<void>;
+    };
+  }
+}
+
+export type ProviderType =
+  | ethers.providers.Web3Provider
+  | ethers.providers.JsonRpcProvider;
+
 const requestAccount = async () => {
   await window.ethereum.request({ method: "eth_requestAccounts" });
 };
 
-const getProvider = () =>
+export const getProvider = (): Promise<ProviderType> =>
   new Promise((resolve, reject) => {
     // Wait for loading completion to avoid race conditions with web3 injection timing.
     window.addEventListener("load", async () => {
@@ -25,5 +37,3 @@ const getProvider = () =>
       }
     });
   });
-
-export default getProvider;
