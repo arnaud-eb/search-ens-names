@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import styled from "@emotion/styled/macro";
 
+interface SearchFormsPropsType {
+  handleParseSearch: (value: string) => void;
+}
+
 const SearchFormContainer = styled("article")``;
 const Form = styled("form")`
   position: relative;
@@ -65,9 +69,9 @@ const Button = styled("button")`
   }
 `;
 
-const SearchForms = ({ handleParseSearch }) => {
+const SearchForms = ({ handleParseSearch }: SearchFormsPropsType) => {
   const [value, setValue] = useState("");
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     handleParseSearch(value);
   };
