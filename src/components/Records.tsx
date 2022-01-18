@@ -3,8 +3,14 @@ import styled from "@emotion/styled/macro";
 import makeBlockie from "ethereum-blockies-base64";
 
 import { truncateAddress } from "../utils/utils";
+import { RecordsType } from "../FormComponent";
 
 import Loader from "./Loader";
+
+interface RecordsPropsType {
+  loading: boolean;
+  records: RecordsType;
+}
 
 const RecordsContainer = styled("article")`
   display: grid;
@@ -28,7 +34,7 @@ const ENSName = styled("h1")`
 `;
 const Address = styled("h2")``;
 
-const Records = ({ loading, records }) => {
+const Records = ({ loading, records }: RecordsPropsType) => {
   if (loading) {
     return <Loader />;
   }
