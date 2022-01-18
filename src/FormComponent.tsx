@@ -19,6 +19,12 @@ export interface ErrorType {
   msg: string;
 }
 
+export interface RecordsType {
+  avatar: string;
+  address: string;
+  name: string;
+}
+
 const FormComponentContainer = styled("section")`
   background-color: var(--clr-white);
   border-radius: var(--radius);
@@ -40,7 +46,7 @@ function FormComponent() {
   const [avatar, setAvatar] = useState("");
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
-  const records = { avatar, address, name };
+  const records: RecordsType = { avatar, address, name };
 
   const init = async () => {
     try {
