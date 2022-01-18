@@ -1,13 +1,5 @@
 import { ethers } from "ethers";
 
-declare global {
-  interface Window {
-    ethereum: {
-      request: (arg: { method: string }) => Promise<void>;
-    };
-  }
-}
-
 export type ProviderType =
   | ethers.providers.Web3Provider
   | ethers.providers.JsonRpcProvider;
