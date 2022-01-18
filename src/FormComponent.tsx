@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled/macro";
 
-import getProvider from "./utils/getProvider";
+import { getProvider, ProviderType } from "./utils/getProvider";
 import { parseSearchTerm, networkName } from "./utils/utils";
 
 import SearchForms from "./components/SearchForm";
 import Records from "./components/Records";
 import Message from "./components/Message";
+
+interface FetchDataType {
+  type: "name" | "code" | "address";
+  value: string;
+}
+
+export interface ErrorType {
+  show: boolean;
+  type: string;
+  msg: string;
+}
 
 const FormComponentContainer = styled("section")`
   background-color: var(--clr-white);
@@ -20,57 +31,62 @@ const FormComponentContainer = styled("section")`
 
 function FormComponent() {
   const [loading, setLoading] = useState(false);
-  const [provider, setProvider] = useState(null);
-  const [alert, setAlert] = useState({ show: false, type: "", msg: "" });
+  const [provider, setProvider] = useState<ProviderType | null>(null);
+  const [alert, setAlert] = useState<ErrorType>({
+    show: false,
+    type: "",
+    msg: "",
+  });
   const [avatar, setAvatar] = useState("");
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const records = { avatar, address, name };
-  // const [records, setRecords] = useState({ avatar: "", address: "", name: "" });
-  // const [error, setError] = useState({ show: false, msg: "" });
-  // const [success, setSuccess] = useState({ show: false, msg: "" });
-  console.log("records", records);
-
-  // const showAlert = (show = false, type = '', msg = '') => {
-  //   setAlert({ show, type, msg });
-  // };
 
   const init = async () => {
     try {
       const provider = await getProvider();
       setProvider(provider);
+      setAlert({ show: false, type: "", msg: "" });
     } catch (error) {
       console.log(error);
     }
   };
 
-  const fetchData = async (type, value) => {
-    setLoading(true);
-    try {
-      if (type === "address") {
-        return await provider.lookupAddress(value);
-      } else if (type === "code") {
-        return await provider.getCode(value);
-      } else {
-        return await provider.resolveName(value);
+  const fetchData = async ({ type, value }: FetchDataType) => {
+    if (!provider) {
+      setAlert({
+        show: true,
+        type: "error",
+        msg: "No connection to a Web3 provider",
+      });
+      init();
+    } else {
+      setLoading(true);
+      try {
+        if (type === "address") {
+          return await provider.lookupAddress(value);
+        } else if (type === "code") {
+          return await provider.getCode(value);
+        } else {
+          return await provider.resolveName(value);
+        }
+      } catch (error) {
+        console.log(error);
+        setAlert({ show: true, type: "error", msg: String(error) });
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.log(error);
-      setAlert({ show: true, type: "error", msg: error });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const getAvatar = async (name) => {
+  const getAvatar = async (name: string) => {
     try {
-      const _network = networkName[provider._network.chainId];
+      const _network = provider && networkName[provider._network.chainId];
       const result = await fetch(
         `https://metadata.ens.domains/${_network}/avatar/${name}/meta`
       );
       const data = await result.json();
       if (data?.image) {
-        console.log(data.image);
         setAvatar(data.image);
       }
     } catch (error) {
@@ -78,8 +94,8 @@ function FormComponent() {
     }
   };
 
-  const handleName = async (name) => {
-    const address = await fetchData("name", name);
+  const handleName = async (name: string) => {
+    const address = await fetchData({ type: "name", value: name });
     if (!address) {
       setAlert({
         show: true,
@@ -87,8 +103,8 @@ function FormComponent() {
         msg: "No Ethereum address associated with this name",
       });
     } else {
-      const code = await fetchData("code", address);
-      if (!code === "0x") {
+      const code = await fetchData({ type: "code", value: address });
+      if (code !== "0x") {
         setAlert({
           show: true,
           type: "error",
@@ -100,22 +116,21 @@ function FormComponent() {
     }
   };
 
-  const handleAddress = async (address) => {
-    const name = await fetchData("address", address);
-    const code = await fetchData("code", address);
+  const handleAddress = async (address: string) => {
+    const name = await fetchData({ type: "address", value: address });
+    const code = await fetchData({ type: "code", value: address });
     if (!name) {
       setAlert({
         show: true,
         type: "error",
-        // msg: `No primary ENS name (reverse record) associated with this address${code}`,
         msg: `No primary ENS name (reverse record) associated with this address${
           code !== "0x" ? ". Note that the address is a contract address." : ""
         }`,
       });
       setAddress(address);
     } else {
-      const code = await fetchData("code", address);
-      if (!code === "0x") {
+      const code = await fetchData({ type: "code", value: address });
+      if (code !== "0x") {
         setAlert({
           show: true,
           type: "error",
@@ -127,7 +142,7 @@ function FormComponent() {
     }
   };
 
-  const handleParseSearch = (value) => {
+  const handleParseSearch = (value: string) => {
     setAlert({ show: false, type: "", msg: "" });
     setAvatar("");
     setAddress("");
