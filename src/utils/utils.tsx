@@ -3,12 +3,16 @@ import {
   parseSearchTerm as _parseSearchTerm,
 } from "@ensdomains/ui/src/utils/index";
 
-export const truncateAddress = (address) => {
+interface NetworkNameType {
+  [k: number]: string;
+}
+
+export const truncateAddress = (address: string) => {
   return address.slice(0, 14) + "..." + address.slice(-4);
 };
 export const truncateName = () => {};
 
-export const parseSearchTerm = (term) => {
+export const parseSearchTerm = (term: string) => {
   const domains = term.split(".");
   const tld = domains[domains.length - 1];
   try {
@@ -19,7 +23,7 @@ export const parseSearchTerm = (term) => {
   return _parseSearchTerm(term, true);
 };
 
-export const networkName = {
+export const networkName: NetworkNameType = {
   1: "mainnet",
   3: "ropsten",
   4: "rinkeby",
