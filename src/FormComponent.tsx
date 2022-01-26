@@ -15,7 +15,7 @@ interface FetchDataType {
 
 export interface ErrorType {
   show: boolean;
-  type: string;
+  type: "" | "error" | "success";
   msg: string;
 }
 
