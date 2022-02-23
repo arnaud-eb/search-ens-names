@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled/macro";
 
 import { getProvider, ProviderType } from "./utils/getProvider";
@@ -85,20 +85,23 @@ function FormComponent() {
     }
   };
 
-  const getAvatar = async (name: string) => {
-    try {
-      const _network = provider && networkName[provider._network.chainId];
-      const result = await fetch(
-        `https://metadata.ens.domains/${_network}/avatar/${name}/meta`
-      );
-      const data = await result.json();
-      if (data?.image) {
-        setAvatar(data.image);
+  const getAvatar = useCallback(
+    async (name: string) => {
+      try {
+        const _network = provider && networkName[provider._network.chainId];
+        const result = await fetch(
+          `https://metadata.ens.domains/${_network}/avatar/${name}/meta`
+        );
+        const data = await result.json();
+        if (data?.image) {
+          setAvatar(data.image);
+        }
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    },
+    [provider]
+  );
 
   const handleName = async (name: string) => {
     const address = await fetchData({ type: "name", value: name });
@@ -181,7 +184,7 @@ function FormComponent() {
     if (name) {
       getAvatar(name);
     }
-  }, [name]);
+  }, [getAvatar, name]);
 
   return (
     <FormComponentContainer>
